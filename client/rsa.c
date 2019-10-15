@@ -110,11 +110,13 @@ int make_rsa_pubkey_to_bytes(struct keypair *kst, unsigned char *pk, int *len)
   PEM_write_bio_RSA_PUBKEY(b, kst->pub);
   BIO_get_mem_ptr(b, &pk_mem);
 
-  if (pk_mem > 0)
+  dmsg("Length of the RSA public key: %d", pk_mem->length);
+
+  if (pk_mem->length > 0)
   {
     memcpy(pk, pk_mem->data, pk_mem->length);
     *len = pk_mem->length;
-    dprint("RSA public key", pk, 0, *len, 10);
+    dprint("RSA public key", pk, 0, *len, ONE_LINE);
     ret = SUCCESS;
   }
   else
@@ -138,7 +140,7 @@ int make_bytes_to_rsa_pubkey(struct keypair *kst, unsigned char *buf, int len)
   assert(buf != NULL);
   assert(len > 0);
 
-  dprint("RSA bytes", buf, 0, len, 10);
+  dprint("RSA bytes", buf, 0, len, ONE_LINE);
 
   b = BIO_new(BIO_s_mem());
   BIO_write(b, buf, len);
