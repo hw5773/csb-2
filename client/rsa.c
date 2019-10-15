@@ -40,9 +40,7 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
 
   struct keypair *ret;
   int klen;
-  BIO *b;
 
-  b = BIO_new_fp(stdout, BIO_NOCLOSE);
   ret = (struct keypair *)malloc(sizeof(struct keypair));
   if (!ret)
   {
@@ -94,28 +92,66 @@ void free_rsa_keypair(struct keypair *kst)
   ffinish("kst: %p", kst);
 }
 
-// TODO: RSA public key -> bytes
 int make_rsa_pubkey_to_bytes(struct keypair *kst, unsigned char *pk, int *len)
 {
   fstart("kst: %p, pk: %p, len: %p", kst, pk, len);
+
+  int ret;
+  unsigned char *buf;
+  BIO *b;
+  BUF_MEM *pk_mem;
 
   assert(kst != NULL);
   assert(kst->pub != NULL);
   assert(pk != NULL);
   assert(len != NULL);
   
+  b = BIO_new(BIO_s_mem());
+  PEM_write_bio_RSA_PUBKEY(b, kst->pub);
+  BIO_get_mem_ptr(b, &pk_mem);
+
+  if (pk_mem > 0)
+  {
+    memcpy(pk, pk_mem->data, pk_mem->length);
+    *len = pk_mem->length;
+    dprint("RSA public key", pk, 0, *len, 10);
+    ret = SUCCESS;
+  }
+  else
+  {
+    emsg("i2d_RSAPublicKey failed");
+    ret = FAILURE;
+  }
+
   ffinish("ret: %d", ret);
   return ret;
 }
 
-// TODO: bytes -> RSA public key
 int make_bytes_to_rsa_pubkey(struct keypair *kst, unsigned char *buf, int len)
 {
   fstart("kst: %p, buf: %p, len: %d", kst, buf, len);
 
+  int ret;
+  BIO *b;
+
   assert(kst != NULL);
   assert(buf != NULL);
   assert(len > 0);
+
+  dprint("RSA bytes", buf, 0, len, 10);
+
+  b = BIO_new(BIO_s_mem());
+  BIO_write(b, buf, len);
+  
+  kst->pub = PEM_read_bio_RSA_PUBKEY(b, NULL, NULL, NULL);
+  if (kst->pub)
+  {
+    ret = SUCCESS;
+  }
+  else
+  {
+    ret = FAILURE;
+  }
 
   ffinish("ret: %d", ret);
   return ret;
