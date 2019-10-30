@@ -62,6 +62,12 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
     // The key should be loaded on ret->pub
   }
 
+  if (!(ret->priv) || !(ret->pub))
+  {
+    emsg("RSA keypair is not correctly initialized");
+    goto err;
+  }
+
   ffinish("ret: %p", ret);
   return ret;
 err:
@@ -166,6 +172,8 @@ int rsa_encrypt_message(struct keypair *kst, unsigned char *input, int ilen,
   fstart("kst: %p, input: %p, ilen: %d, output: %p, olen: %p",
       kst, input, ilen, output, olen);
 
+  int ret;
+
   assert(kst != NULL);
   assert(input != NULL);
   assert(ilen > 0);
@@ -184,6 +192,8 @@ int rsa_decrypt_message(struct keypair *kst, unsigned char *input, int ilen,
 {
   fstart("kst: %p, input: %p, ilen: %d, output: %p, olen: %p",
       kst, input, ilen, output, olen);
+
+  int ret;
 
   assert(kst != NULL);
   assert(input != NULL);
