@@ -22,7 +22,7 @@
 int usage(const char *pname)
 {
   emsg(">> usage: %s [-h <domain>] [--host <domain>] [-p <portnum>] [--port <portnum>] [--sk <private key file>] [--pk <public key file>]", pname);
-  emsg(">> example: %s -h www.alice.com -p 5555 --sk ../key/client_priv.pem --pk ../key/client_pub.pem", pname);
+  emsg(">> example: %s -h www.alice.com -p 5555 --sk ../key/default_priv.pem --pk ../key/default_pub.pem", pname);
   exit(0);
 }
 
@@ -147,11 +147,19 @@ int main(int argc, char *argv[])
   }
 
   /* TODO: Initialize the RSA keypair */
+  imsg("Load the Client's keypair");
   kst = init_rsa_keypair(skname, pkname);
   if (!kst)
   {
     emsg("Initialize the RSA keypair failed");
-    abort();
+    emsg("We are going to use the default RSA keypair");
+    kst = init_default_rsa_keypair();
+
+    if (!kst)
+    {
+      emsg("Some error happened during loading the RSA keypair");
+      abort();
+    }
   }
 
   /* Set the TCP connection with the server */
@@ -171,7 +179,7 @@ int main(int argc, char *argv[])
     abort();
   }
 
-  /* Make the RSA public key to bytes */
+  /* TODO: Make the RSA public key to bytes */
   ret = make_rsa_pubkey_to_bytes(kst, my_pk, &len);
   if (ret == FAILURE)
   {
@@ -186,7 +194,7 @@ int main(int argc, char *argv[])
     emsg("Send the key bytes failed");
     abort();
   }
-  iprint("Client's public key", my_pk, 0, len, ONE_LINE);
+  dprint("Client's public key", my_pk, 0, len, ONE_LINE);
 
   /* Receive the Server's RSA public key */
   ret = receive_message(server, buf, BUF_SIZE);
@@ -198,6 +206,7 @@ int main(int argc, char *argv[])
   rlen = ret;
 
   /* Initialize the RSA keypair */
+  imsg("Load the Server's public key");
   peer = init_rsa_keypair(NULL, NULL);
   if (!peer)
   {
@@ -205,7 +214,7 @@ int main(int argc, char *argv[])
     abort();
   }
 
-  /* Make the bytes to the Server's public key */
+  /* TODO: Make the bytes to the Server's public key */
   ret = make_bytes_to_rsa_pubkey(peer, buf, rlen);
   if (ret == FAILURE)
   {
@@ -229,7 +238,7 @@ int main(int argc, char *argv[])
     emsg("Decrypt the challenge message failed");
     abort();
   }
-  iprint("Received message", buf, 0, rlen, ONE_LINE);
+  dprint("Received message", buf, 0, rlen, ONE_LINE);
   imsg("Challenge (%d bytes): %s", plen, plain);
 
   /* TODO: Encrypt the challenge message with Server's public key */
@@ -247,7 +256,7 @@ int main(int argc, char *argv[])
     emsg("Send the challenge message failed");
     abort();
   }
-  iprint("Sent message", ciph, 0, clen, ONE_LINE);
+  dprint("Sent message", ciph, 0, clen, ONE_LINE);
 
   /* Receive the result from Server */
   ret = receive_message(server, buf, BUF_SIZE);
@@ -259,9 +268,13 @@ int main(int argc, char *argv[])
   rlen = ret;
   verified = buf[0];
 
-  if (verified)
+  if (verified == 1)
   {
-    imsg("Success!");
+    imsg("Success with your generated key!");
+  }
+  else if (verified == 2)
+  {
+    imsg("Success with the default key!");
   }
   else
   {

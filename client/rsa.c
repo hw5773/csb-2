@@ -40,7 +40,9 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
 
   struct keypair *ret;
   int klen;
+  BIO *b;
 
+  b = BIO_new_fp(stdout, BIO_NOCLOSE);
   ret = (struct keypair *)malloc(sizeof(struct keypair));
   if (!ret)
   {
@@ -53,16 +55,35 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
   // TODO: Please implement the following (Load the private key from the file)
   if (skname)
   {
-    // The key should be loaded on ret->priv
+    FILE *sk = fopen(skname, "rb");
+    ret->priv = RSA_new();
+    ret->priv = PEM_read_RSAPrivateKey(sk, NULL, NULL, NULL);
+    if (!(ret->priv))
+      emsg("Error to load the RSA private key");
+    else
+    {
+      imsg("Succeed to load the RSA private key");
+    }
+    fclose(sk);
   }
 
   // TODO: Please implement the following (Load the public key from the file)
   if (pkname)
   {
-    // The key should be loaded on ret->pub
+    FILE *pk = fopen(pkname, "rb");
+    ret->pub = RSA_new();
+    ret->pub = PEM_read_RSA_PUBKEY(pk, NULL, NULL, NULL);
+    if (!(ret->pub))
+      emsg("Error to load the RSA public key");
+    else
+    {
+      imsg("Succeed to load the RSA public key");
+      RSA_print(b, ret->pub, 0);
+    }
+    fclose(pk);
   }
 
-  if (!(ret->priv) || !(ret->pub))
+  if (skname && pkname && (!(ret->priv) || !(ret->pub)))
   {
     emsg("RSA keypair is not correctly initialized");
     goto err;
@@ -118,11 +139,11 @@ int make_rsa_pubkey_to_bytes(struct keypair *kst, unsigned char *pk, int *len)
 
   dmsg("Length of the RSA public key: %d", pk_mem->length);
 
-  if (pk_mem->length > 0)
+  if (pk_mem > 0)
   {
     memcpy(pk, pk_mem->data, pk_mem->length);
     *len = pk_mem->length;
-    dprint("RSA public key", pk, 0, *len, ONE_LINE);
+    dprint("RSA public key", pk, 0, *len, 10);
     ret = SUCCESS;
   }
   else
@@ -140,20 +161,22 @@ int make_bytes_to_rsa_pubkey(struct keypair *kst, unsigned char *buf, int len)
   fstart("kst: %p, buf: %p, len: %d", kst, buf, len);
 
   int ret;
-  BIO *b;
+  BIO *b, *out;
 
   assert(kst != NULL);
   assert(buf != NULL);
   assert(len > 0);
 
-  dprint("RSA bytes", buf, 0, len, ONE_LINE);
+  dprint("RSA bytes", buf, 0, len, 10);
 
   b = BIO_new(BIO_s_mem());
   BIO_write(b, buf, len);
-  
+  out = BIO_new_fp(stdout, BIO_NOCLOSE);
+
   kst->pub = PEM_read_bio_RSA_PUBKEY(b, NULL, NULL, NULL);
   if (kst->pub)
   {
+    RSA_print(out, kst->pub, 0);
     ret = SUCCESS;
   }
   else
@@ -165,7 +188,6 @@ int make_bytes_to_rsa_pubkey(struct keypair *kst, unsigned char *buf, int len)
   return ret;
 }
 
-// TODO: RSA encryption
 int rsa_encrypt_message(struct keypair *kst, unsigned char *input, int ilen,
     unsigned char *output, int *olen)
 {
@@ -173,20 +195,30 @@ int rsa_encrypt_message(struct keypair *kst, unsigned char *input, int ilen,
       kst, input, ilen, output, olen);
 
   int ret;
-
   assert(kst != NULL);
   assert(input != NULL);
   assert(ilen > 0);
   assert(output != NULL);
   assert(olen != NULL);
   
-  //*olen =;
+  *olen = RSA_public_encrypt(ilen, input, output, kst->pub, PADDING);
+
+  if (*olen > 0)
+  {
+    dprint("Input", input, 0, ilen, 10);
+    dprint("Output", output, 0, *olen, 10);
+    ret = SUCCESS;
+  }
+  else
+  {
+    emsg("RSA Encryption error");
+    ret = FAILURE;
+  }
 
   ffinish("ret: %d", ret);
   return ret;
 }
 
-// TODO: RSA decryption
 int rsa_decrypt_message(struct keypair *kst, unsigned char *input, int ilen, 
     unsigned char *output, int *olen)
 {
@@ -201,7 +233,19 @@ int rsa_decrypt_message(struct keypair *kst, unsigned char *input, int ilen,
   assert(output != NULL);
   assert(olen != NULL);
 
-  // *olen =;
+  *olen = RSA_private_decrypt(ilen, input, output, kst->priv, PADDING);
+
+  if (*olen > 0)
+  {
+    dprint("Input", input, 0, ilen, 10);
+    dprint("Output", output, 0, *olen, 10);
+    ret = SUCCESS;
+  }
+  else
+  {
+    emsg("RSA Decryption error");
+    ret = FAILURE;
+  }
 
   ffinish("ret: %d", ret);
   return ret;

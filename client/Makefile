@@ -25,7 +25,7 @@ PORT=5555
 all: client
 
 client: ${CLIENT_OBJ}
-	${CC} -o ${CLIENT} ${CLIENT_OBJ} ${LDFLAGS}
+	${CC} -o ${CLIENT} ${CLIENT_OBJ} default.o ${LDFLAGS}
 
 client.o: ${CLIENT_SRC}
 	${CC} ${FLAGS} ${CFLAGS} -c $<
