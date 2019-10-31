@@ -55,32 +55,13 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
   // TODO: Please implement the following (Load the private key from the file)
   if (skname)
   {
-    FILE *sk = fopen(skname, "rb");
-    ret->priv = RSA_new();
-    ret->priv = PEM_read_RSAPrivateKey(sk, NULL, NULL, NULL);
-    if (!(ret->priv))
-      emsg("Error to load the RSA private key");
-    else
-    {
-      imsg("Succeed to load the RSA private key");
-    }
-    fclose(sk);
+    // The key should be loaded on ret->priv
   }
 
   // TODO: Please implement the following (Load the public key from the file)
   if (pkname)
   {
-    FILE *pk = fopen(pkname, "rb");
-    ret->pub = RSA_new();
-    ret->pub = PEM_read_RSA_PUBKEY(pk, NULL, NULL, NULL);
-    if (!(ret->pub))
-      emsg("Error to load the RSA public key");
-    else
-    {
-      imsg("Succeed to load the RSA public key");
-      RSA_print(b, ret->pub, 0);
-    }
-    fclose(pk);
+    // The key should be loaded on ret->pub
   }
 
   if (skname && pkname && (!(ret->priv) || !(ret->pub)))
@@ -201,19 +182,8 @@ int rsa_encrypt_message(struct keypair *kst, unsigned char *input, int ilen,
   assert(output != NULL);
   assert(olen != NULL);
   
-  *olen = RSA_public_encrypt(ilen, input, output, kst->pub, PADDING);
+  // *olen =;
 
-  if (*olen > 0)
-  {
-    dprint("Input", input, 0, ilen, 10);
-    dprint("Output", output, 0, *olen, 10);
-    ret = SUCCESS;
-  }
-  else
-  {
-    emsg("RSA Encryption error");
-    ret = FAILURE;
-  }
 
   ffinish("ret: %d", ret);
   return ret;
@@ -233,19 +203,7 @@ int rsa_decrypt_message(struct keypair *kst, unsigned char *input, int ilen,
   assert(output != NULL);
   assert(olen != NULL);
 
-  *olen = RSA_private_decrypt(ilen, input, output, kst->priv, PADDING);
-
-  if (*olen > 0)
-  {
-    dprint("Input", input, 0, ilen, 10);
-    dprint("Output", output, 0, *olen, 10);
-    ret = SUCCESS;
-  }
-  else
-  {
-    emsg("RSA Decryption error");
-    ret = FAILURE;
-  }
+  // *olen =;
 
   ffinish("ret: %d", ret);
   return ret;
