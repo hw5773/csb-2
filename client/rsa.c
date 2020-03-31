@@ -39,7 +39,6 @@ struct keypair *init_rsa_keypair(const char *skname, const char *pkname)
   fstart("skname: %p, pkname: %p", skname, pkname);
 
   struct keypair *ret;
-  int klen;
   BIO *b;
 
   b = BIO_new_fp(stdout, BIO_NOCLOSE);
@@ -105,7 +104,6 @@ int make_rsa_pubkey_to_bytes(struct keypair *kst, unsigned char *pk, int *len)
   fstart("kst: %p, pk: %p, len: %p", kst, pk, len);
 
   int ret;
-  unsigned char *buf;
   BIO *b;
   BUF_MEM *pk_mem;
 

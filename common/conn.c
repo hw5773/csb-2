@@ -43,7 +43,7 @@ int open_connection(const char *domain, int port)
 int open_listener(int port)
 {   
   fstart("port: %d", port);
-  int sd, ret, enable;
+  int sd, enable;
   struct sockaddr_in addr;
 
   sd = socket(PF_INET, SOCK_STREAM, 0); 

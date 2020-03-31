@@ -16,7 +16,7 @@ OBJS=${CLIENT_OBJ}
 
 TARGET_DIR=/usr/local/bin
 
-CFLAGS=-I${HOME}/boringssl/include
+CFLAGS=-I${HOME}/boringssl/include -Wall
 LDFLAGS=-L${HOME}/boringssl/build/crypto -L${HOME}/boringssl/build/ssl -lssl -lcrypto -ldl -lpthread
 
 HOST=www.bob.com

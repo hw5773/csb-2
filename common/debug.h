@@ -12,7 +12,7 @@
 #define LINFO 2
 #define LERROR 3
 
-static int count_idx;
+// static int count_idx;
 
 #if DEBUG_LEVEL <= LFINFO
 #define fstart(format, ...) printf("[CSB/FINFO] Start: %s:%s: " format "\n", __FILE__, __func__, ## __VA_ARGS__)

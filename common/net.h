@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-int send_message(int fd, unsigned char *msg, int mlen);
+int send_message(int fd, const unsigned char *msg, int mlen);
 int receive_message(int fd, unsigned char *buf, int max);
 
 #endif /* __NET_H__ */

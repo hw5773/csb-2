@@ -34,12 +34,12 @@ int main(int argc, char *argv[])
   struct keypair *kst, *peer;
   unsigned char buf[BUF_SIZE] = {0, };
   unsigned char my_pk[BUF_SIZE] = {0, };
-  unsigned char peer_pk[BUF_SIZE] = {0, };
+  // unsigned char peer_pk[BUF_SIZE] = {0, };
   unsigned char plain[BUF_SIZE] = {0, };
   unsigned char ciph[BUF_SIZE] = {0, };
   unsigned char verified;
   const char *start = "Start";
-  int ret, len, clen, rlen, plen, klen, c, err;
+  int ret, len, clen, rlen, plen, c, err;
 
   pname = argv[0];
   domain = NULL;
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 
 
   /* Send the Start message to Server */
-  ret = send_message(server, start, strlen(start));
+  ret = send_message(server, (unsigned char*) start, strlen(start));
   if (ret == FAILURE)
   {
     emsg("Send the Start message failed");

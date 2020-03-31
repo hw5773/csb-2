@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-int tcp_send(int fd, char *buf, int len)
+int tcp_send(int fd, const unsigned char *buf, int len)
 {
   fstart("fd: %d, buf: %p, len: %d", fd, buf, len);
   int sent, offset;
@@ -42,7 +42,7 @@ err:
   return FAILURE;
 }
 
-int tcp_recv(int fd, char *buf, int len)
+int tcp_recv(int fd, unsigned char *buf, int len)
 {
   fstart("fd: %d, buf: %p, len: %d", fd, buf, len);
   int rcvd, offset;
@@ -90,15 +90,12 @@ err:
  * (the length information is not included)
  *
  */
-int send_message(int fd, unsigned char *msg, int mlen)
+int send_message(int fd, const unsigned char *msg, int mlen)
 {
   fstart("fd: %d, msg: %p, mlen: %d", fd, msg, mlen);
   int ret;
-  char len[LENGTH_INFO_LEN];
-  char *p;
-  struct timeval tv;
-  time_t sec;
-  size_t tlen;
+  unsigned char len[LENGTH_INFO_LEN];
+  unsigned char *p;
 
   assert(fd > 2);
   assert(msg != NULL);
@@ -137,10 +134,9 @@ int receive_message(int fd, unsigned char *buf, int rlen)
 {
   fstart("fd: %d, buf: %p, rlen: %d", fd, buf, rlen);
   int ret;
-  char len[LENGTH_INFO_LEN];
-  char seconds[TIMESTAMP_LEN];
-  char *p;
-  int tlen, mlen;
+  unsigned char len[LENGTH_INFO_LEN];
+  unsigned char *p;
+  int mlen;
 
   assert(fd > 2);
   assert(buf != NULL);

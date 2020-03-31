@@ -7,12 +7,59 @@
 #define DELIMITER 		"\r\n"
 #define DELIMITER_LEN 2
 
+static int char_to_int(char *str, uint32_t slen) 
+{
+	int i;
+	int ret = 0;
+	uint8_t ch;
+
+	for (i = 0; i < slen; i++) {
+		ch = str[i];
+		if (ch == ' ')
+			break;
+
+		switch (ch) {
+		case '0':
+			ret *= 10;
+			continue;
+		case '1':
+			ret = ret * 10 + 1;
+			continue;
+		case '2':
+			ret = ret * 10 + 2;
+			continue;
+		case '3':
+			ret = ret * 10 + 3;
+			continue;
+		case '4':
+			ret = ret * 10 + 4;
+			continue;
+		case '5':
+			ret = ret * 10 + 5;
+			continue;
+		case '6':
+			ret = ret * 10 + 6;
+			continue;
+		case '7':
+			ret = ret * 10 + 7;
+			continue;
+		case '8':
+			ret = ret * 10 + 8;
+			continue;
+		case '9':
+			ret = ret * 10 + 9;
+			continue;
+		}
+	}
+
+	return ret;
+}
 int http_make_request(uint8_t *domain, uint32_t dlen, uint8_t *content,
     uint32_t clen, uint8_t *msg, uint32_t *mlen) {
-  const uint8_t *get = "GET /";
-  const uint8_t *http = " HTTP/1.1";
-  const uint8_t *host = "Host: ";
-  const uint8_t *header = "User-Agent: Wget/1.17.1 (linux-gnu)\r\n"
+  const char *get = "GET /";
+  const char *http = " HTTP/1.1";
+  const char *host = "Host: ";
+  const char *header = "User-Agent: Wget/1.17.1 (linux-gnu)\r\n"
       "Accept: */*\r\n"
       "Accept-Encoding: identity\r\n\r\n";
   uint32_t hlen;
@@ -50,10 +97,10 @@ int http_make_request(uint8_t *domain, uint32_t dlen, uint8_t *content,
   return *mlen;
 }
 
-int http_parse_request(uint8_t *msg, uint32_t mlen, struct rinfo *r) {
+int http_parse_request(char *msg, uint32_t mlen, struct rinfo *r) {
 	(void) mlen;
 	int l;
-	uint8_t *cptr, *nptr, *p, *q;
+	char *cptr, *nptr, *p, *q;
 	struct rinfo *info;
 
 	info = r;
@@ -109,11 +156,11 @@ int http_parse_request(uint8_t *msg, uint32_t mlen, struct rinfo *r) {
 	return 1;
 }
 
-int http_parse_response(uint8_t *msg, uint32_t mlen)
+int http_parse_response(char *msg, uint32_t mlen)
 {
   int ret, hlen;
   uint32_t i, j, l;
-  uint8_t *cptr, *nptr, *p;
+  char *cptr, *nptr, *p;
   cptr = msg;
   ret = INT_MAX;
   hlen = 0;
